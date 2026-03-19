@@ -163,7 +163,7 @@ stdenv.mkDerivation (finalAttrs: {
     gappsWrapperArgs+=(
       --prefix XDG_DATA_DIRS : "$XDG_ICON_DIRS:$GSETTINGS_SCHEMAS_PATH:$out/share"
     )
-  ''
+  '';
 
   postInstall = ''
     find $out/opt/waterfox -type f -name "*.so" -exec sh -c '
