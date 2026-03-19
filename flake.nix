@@ -15,5 +15,10 @@
       waterfox-bin = pkgs.callPackage ./pkgs/waterfox-bin/default.nix { };
       default = self.packages.${system}.waterfox-bin;
     };
+
+    overlays.default = final: prev: {
+      waterfox = final.callPackage ./pkgs/waterfox/default.nix { };
+      waterfox-bin = final.callPackage ./pkgs/waterfox-bin/default.nix { };
+    };
   };
 }
