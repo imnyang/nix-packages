@@ -145,7 +145,7 @@ stdenv.mkDerivation (finalAttrs: {
     cp -r . $out/opt/waterfox
 
     makeWrapper $out/opt/waterfox/waterfox-bin $out/bin/waterfox \
-      --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath finalAttrs.buildInputs}"
+      --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath finalAttrs.buildInputs}" \
       --suffix PATH : "${lib.makeBinPath [ pciutils ]}"
 
     mkdir -p $out/opt/waterfox/distribution
