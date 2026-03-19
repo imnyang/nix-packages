@@ -146,7 +146,8 @@ stdenv.mkDerivation (finalAttrs: {
 
     makeWrapper $out/opt/waterfox/waterfox-bin $out/bin/waterfox \
       --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath finalAttrs.buildInputs}"
-
+      --suffix PATH : "${lib.makeBinPath [ pciutils ]}"
+      
     cp ${desktopItem}/share/applications/* $out/share/applications/
 
     mkdir -p $out/share/icons/hicolor/256x256/apps
@@ -198,6 +199,7 @@ stdenv.mkDerivation (finalAttrs: {
   preFixup = ''
     gappsWrapperArgs+=(
       --prefix XDG_DATA_DIRS : "$XDG_ICON_DIRS:$GSETTINGS_SCHEMAS_PATH:$out/share"
+      --prefix GTK_PATH : "${gtk3}/lib/gtk-3.0"
     )
   '';
 
