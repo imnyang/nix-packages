@@ -147,6 +147,18 @@ stdenv.mkDerivation (finalAttrs: {
     makeWrapper $out/opt/waterfox/waterfox-bin $out/bin/waterfox \
       --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath finalAttrs.buildInputs}"
       --suffix PATH : "${lib.makeBinPath [ pciutils ]}"
+
+    mkdir -p $out/opt/waterfox/distribution
+    cat <<EOF > $out/opt/waterfox/distribution/policies.json
+    {
+      "policies": {
+        "DisableAppUpdate": true,
+        "DontCheckDefaultBrowser": true,
+        "DisplayBookmarksToolbar": "never",
+        "NoDefaultBookmarks": true
+      }
+    }
+    EOF
       
     cp ${desktopItem}/share/applications/* $out/share/applications/
 
