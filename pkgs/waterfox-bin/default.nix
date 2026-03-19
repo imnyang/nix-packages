@@ -145,7 +145,6 @@ stdenv.mkDerivation (finalAttrs: {
     cp -r . $out/opt/waterfox
 
     makeWrapper $out/opt/waterfox/waterfox-bin $out/bin/waterfox \
-      --set GTK_IM_MODULE gtk-im-context-simple \
       --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath finalAttrs.buildInputs}"
 
     cp ${desktopItem}/share/applications/* $out/share/applications/
@@ -159,6 +158,12 @@ stdenv.mkDerivation (finalAttrs: {
 
     runHook postInstall
   '';
+
+  preFixup = ''
+    gappsWrapperArgs+=(
+      --prefix XDG_DATA_DIRS : "$XDG_ICON_DIRS:$GSETTINGS_SCHEMAS_PATH:$out/share"
+    )
+  ''
 
   postInstall = ''
     find $out/opt/waterfox -type f -name "*.so" -exec sh -c '
