@@ -9,16 +9,17 @@
   let
     system = "x86_64-linux";
     overlay = final: prev: {
-      waterfox = final.callPackage ./pkgs/waterfox/default.nix { };
+      # waterfox = final.callPackage ./pkgs/waterfox/default.nix { };
       waterfox-bin = final.callPackage ./pkgs/waterfox-bin/default.nix { };
+      xcursor-mizuki = final.callPackage ./pkgs/xcursor-mizuki/default.nix { stdenv = final.stdenv; };
     };
     pkgs = nixpkgs.legacyPackages.${system}.extend overlay;
   in {
     overlays.default = overlay;
 
     packages.${system} = {
-      inherit (pkgs) waterfox waterfox-bin;
-      default = pkgs.waterfox-bin;
+      inherit (pkgs) waterfox-bin xcursor-mizuki;
+      # default = pkgs.waterfox-bin;
     };
   };
 }
