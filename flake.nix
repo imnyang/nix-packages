@@ -10,6 +10,7 @@
     system = "x86_64-linux";
     overlay = final: prev: {
       # waterfox = final.callPackage ./pkgs/waterfox/default.nix { };
+      another = final.callPackage ./pkgs/another/default.nix { };
       waterfox-bin = final.callPackage ./pkgs/waterfox-bin/default.nix { };
       xcursor-mizuki = final.callPackage ./pkgs/xcursor-mizuki/default.nix { stdenv = final.stdenv; };
     };
@@ -18,7 +19,7 @@
     overlays.default = overlay;
 
     packages.${system} = {
-      inherit (pkgs) waterfox-bin xcursor-mizuki;
+      inherit (pkgs) another waterfox-bin xcursor-mizuki;
       # default = pkgs.waterfox-bin;
     };
   };
