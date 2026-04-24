@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  list-packages:
+    runs-on: x86_64
+    outputs:
+      packages: ${{ steps.set-matrix.outputs.packages }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: nixbuild/nix-quick-install-action@v29
+      - id: set-matrix
+        run: |
+          PACKAGES=$(nix flake show --json | jq -c '.packages."x86_64-linux" | keys')
+          echo "packages=$PACKAGES" >> $GITHUB_OUTPUT
+
+  check:
+    runs-on: x86_64
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Check flake
+        run: |
+          nix flake check
+          
+  build:
+    needs: list-packages
+    runs-on: x86_64
+    strategy:
+      fail-fast: false
+      matrix:
+        package: ${{ fromJson(needs.list-packages.outputs.packages) }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build package
+        run: |
+          nix build .#${{ matrix.package }}
+
+      - name: Cache & Push to Attic
+        if: success()
+        env:
+          ATTIC_SERVER: ${{ secrets.ATTIC_SERVER }}
+          ATTIC_TOKEN: ${{ secrets.ATTIC_TOKEN }}
+        run: |
+          nix shell nixpkgs#attic-client -c bash -c "
+            attic login imnyang \"$ATTIC_SERVER\" \"$ATTIC_TOKEN\"
+            attic push imnyang ./result
+          "
+
