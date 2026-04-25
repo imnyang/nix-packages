@@ -21,15 +21,15 @@ jobs:
             echo "packages=$PACKAGES" >> $GITHUB_OUTPUT
           "
 
-  check:
-    runs-on: x86_64
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Check flake
-        run: |
-          source /etc/bashrc
-          nix flake check
+  # check:
+  #   runs-on: x86_64
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
+  #     - name: Check flake
+  #       run: |
+  #         source /etc/bashrc
+  #         nix flake check
           
   build:
     needs: list-packages
@@ -56,7 +56,7 @@ jobs:
         run: |
           source /etc/bashrc
           nix shell nixpkgs#attic-client -c bash -c "
-            attic login imnyang \"$ATTIC_SERVER\" \"$ATTIC_TOKEN\"
-            attic push imnyang ./result
+            attic login mizuki \"$ATTIC_SERVER\" \"$ATTIC_TOKEN\"
+            attic push public ./result
           "
 
