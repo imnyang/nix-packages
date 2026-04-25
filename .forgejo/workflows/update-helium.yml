@@ -20,7 +20,7 @@ jobs:
           CURRENT_VERSION=$(grep 'version = ' pkgs/helium/default.nix | head -1 | grep -oP '"[^"]+"' | tr -d '"')
           echo "Current version: $CURRENT_VERSION"
 
-          LATEST_VERSION=$(curl -fsSL https://api.github.com/repos/imputnet/helium-linux/releases/latest | nix run nixpkgs#jq -- -r '.tag_name')
+          LATEST_VERSION=$(curl -fsSL https://api.github.com/repos/imputnet/helium-linux/releases | nix run nixpkgs#jq -- -r '.[0].tag_name')
           echo "Latest version: $LATEST_VERSION"
 
           if [ "$CURRENT_VERSION" = "$LATEST_VERSION" ]; then
