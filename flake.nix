@@ -22,6 +22,7 @@
     overlays.default = overlay;
 
     nixosModules.helium-sync = import ./modules/helium-sync.nix;
+    homeManagerModules.helium-sync = import ./modules/helium-sync-hm.nix;
 
     packages.${system} = {
       inherit (pkgs) waterfox-bin xcursor-mizuki pjsk-cursor helium helium-sync;
@@ -29,4 +30,3 @@
     };
   };
 }
-
