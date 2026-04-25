@@ -26,6 +26,7 @@ jobs:
         uses: actions/checkout@v4
       - name: Check flake
         run: |
+          source /etc/bashrc
           nix flake check
           
   build:
@@ -42,6 +43,7 @@ jobs:
 
       - name: Build package
         run: |
+          source /etc/bashrc
           nix build .#${{ matrix.package }}
 
       - name: Cache & Push to Attic
@@ -50,6 +52,7 @@ jobs:
           ATTIC_SERVER: ${{ secrets.ATTIC_SERVER }}
           ATTIC_TOKEN: ${{ secrets.ATTIC_TOKEN }}
         run: |
+          source /etc/bashrc
           nix shell nixpkgs#attic-client -c bash -c "
             attic login imnyang \"$ATTIC_SERVER\" \"$ATTIC_TOKEN\"
             attic push imnyang ./result
