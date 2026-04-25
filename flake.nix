@@ -15,14 +15,18 @@
       xcursor-mizuki = final.callPackage ./pkgs/xcursor-mizuki/default.nix { stdenv = final.stdenv; };
       pjsk-cursor = final.callPackage ./pkgs/pjsk-cursor/default.nix { stdenv = final.stdenv; };
       helium = final.callPackage ./pkgs/helium/default.nix { };
+      helium-sync = final.callPackage ./pkgs/helium-sync/default.nix { };
     };
     pkgs = nixpkgs.legacyPackages.${system}.extend overlay;
   in {
     overlays.default = overlay;
 
+    nixosModules.helium-sync = import ./modules/helium-sync.nix;
+
     packages.${system} = {
-      inherit (pkgs) waterfox-bin xcursor-mizuki pjsk-cursor helium;
+      inherit (pkgs) waterfox-bin xcursor-mizuki pjsk-cursor helium helium-sync;
       # default = pkgs.waterfox-bin;
     };
   };
 }
+
