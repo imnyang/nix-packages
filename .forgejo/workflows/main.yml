@@ -16,10 +16,8 @@ jobs:
       - id: set-matrix
         run: |
           source /etc/bashrc
-          nix shell nixpkgs#jq -c bash -c "
-            PACKAGES=$(nix flake show --json | jq -c '.packages."x86_64-linux" | keys')
-            echo "packages=$PACKAGES" >> $GITHUB_OUTPUT
-          "
+          PACKAGES=$(nix flake show --json | nix run nixpkgs#jq -- -c '.packages."x86_64-linux" | keys')
+          echo "packages=$PACKAGES" >> $GITHUB_OUTPUT
 
   # check:
   #   runs-on: x86_64
@@ -57,6 +55,7 @@ jobs:
           source /etc/bashrc
           nix shell nixpkgs#attic-client -c bash -c "
             attic login mizuki \"$ATTIC_SERVER\" \"$ATTIC_TOKEN\"
+            attic cache info public
             attic push public ./result
           "
 
