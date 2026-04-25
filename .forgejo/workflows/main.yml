@@ -15,8 +15,11 @@ jobs:
       - uses: actions/checkout@v4
       - id: set-matrix
         run: |
-          PACKAGES=$(nix flake show --json | jq -c '.packages."x86_64-linux" | keys')
-          echo "packages=$PACKAGES" >> $GITHUB_OUTPUT
+          source /etc/bashrc
+          nix shell nixpkgs#jq -c bash -c "
+            PACKAGES=$(nix flake show --json | jq -c '.packages."x86_64-linux" | keys')
+            echo "packages=$PACKAGES" >> $GITHUB_OUTPUT
+          "
 
   check:
     runs-on: x86_64
