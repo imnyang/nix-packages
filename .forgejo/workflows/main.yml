@@ -13,7 +13,6 @@ jobs:
       packages: ${{ steps.set-matrix.outputs.packages }}
     steps:
       - uses: actions/checkout@v4
-      - uses: nixbuild/nix-quick-install-action@v29
       - id: set-matrix
         run: |
           PACKAGES=$(nix flake show --json | jq -c '.packages."x86_64-linux" | keys')
