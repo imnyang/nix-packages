@@ -41,5 +41,14 @@
       
       default = pkgs.helium; # 예시로 하나를 기본값으로 지정
     };
+
+    nixConfig = {
+      extra-substituters = [
+        "https://cache.mizuki.guru/public"
+      ];
+      extra-trusted-public-keys = [
+        "cache.mizuki.guru:IgipakDD/clr0XbuaIejPYMT5UkTVGKVTxtWXcsbiAg="
+      ];
+    };
   };
 }
