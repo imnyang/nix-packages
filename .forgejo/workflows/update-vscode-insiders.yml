@@ -1,0 +1,93 @@
+name: Update VSCode Insiders
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: x86_64
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check for new vscode-insiderss release
+        id: check
+        run: |
+          source /etc/bashrc
+
+          CURRENT_VERSION=$(grep 'version = ' pkgs/vscode-insiders/default.nix | head -1 | grep -oP '"[^"]+"' | tr -d '"')
+          echo "Current version: $CURRENT_VERSION"
+
+          LATEST_VERSION=$(curl -fsSL https://update.code.visualstudio.com/api/releases/insider | nix run nixpkgs#jq -- -r '.[0]')
+          echo "Latest version: $LATEST_VERSION"
+
+          if [ "$CURRENT_VERSION" = "$LATEST_VERSION" ]; then
+            echo "Already up to date."
+            echo "updated=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          echo "New version found: $LATEST_VERSION"
+          echo "latest_version=$LATEST_VERSION" >> $GITHUB_OUTPUT
+          echo "updated=true" >> $GITHUB_OUTPUT
+
+      - name: Update version and sha256
+        if: steps.check.outputs.updated == 'true'
+        id: update
+        run: |
+          source /etc/bashrc
+
+          LATEST="${{ steps.check.outputs.latest_version }}"
+          URL="https://code.visualstudio.com/sha/download?build=insider&os=linux-x64"
+
+          echo "Fetching new sha256 for VSCode Insiders..."
+          NEW_SHA256=$(nix-prefetch-url --type sha256 "$URL" 2>/dev/null | tail -1)
+          NEW_SHA256_SRI=$(nix hash convert --hash-algo sha256 --to sri "$NEW_SHA256")
+          echo "New sha256 (SRI): $NEW_SHA256_SRI"
+
+          sed -i "s|version = \".*\";|version = \"${LATEST}\";|" pkgs/vscode-insiders/default.nix
+          sed -i "s|sha256 = \"sha256-.*\";|sha256 = \"${NEW_SHA256_SRI}\";|" pkgs/vscode-insiders/default.nix
+
+          echo "new_sha256=$NEW_SHA256_SRI" >> $GITHUB_OUTPUT
+
+      - name: Verify build
+        if: steps.check.outputs.updated == 'true'
+        run: |
+          source /etc/bashrc
+          NIXPKGS_ALLOW_UNFREE=1 nix build .#vscode-insiderss
+
+      - name: Create Pull Request
+        if: steps.check.outputs.updated == 'true'
+        env:
+          API_FORGEJO_TOKEN: ${{ secrets.API_FORGEJO_TOKEN }}
+        run: |
+          source /etc/bashrc
+
+          LATEST="${{ steps.check.outputs.latest_version }}"
+          BRANCH="update/vscode-insiders-${LATEST}"
+
+          git config user.name "mizuki"
+          git config user.email "akiyama@mizuki.guru"
+
+          git checkout -b "$BRANCH"
+          git add pkgs/vscode-insiders/default.nix
+          git commit -m "pkgs/vscode-insiders: update to ${LATEST}"
+
+          REPO_URL=$(git remote get-url origin | sed 's|https://||')
+          git push "https://oauth2:${API_FORGEJO_TOKEN}@${REPO_URL}" "$BRANCH"
+
+          FORGEJO_HOST=$(echo "$REPO_URL" | cut -d'/' -f1)
+          REPO_PATH=$(echo "$REPO_URL" | cut -d'/' -f2-)
+          
+          curl -fsSL -X POST \
+            -H "Authorization: token ${API_FORGEJO_TOKEN}" \
+            -H "Content-Type: application/json" \
+            "https://${FORGEJO_HOST}/api/v1/repos/${REPO_PATH}/pulls" \
+            -d "{
+              \"title\": \"pkgs/vscode-insiders: update to ${LATEST}\",
+              \"head\": \"${BRANCH}\",
+              \"base\": \"main\",
+              \"body\": \"Automated update of VSCode Insiders to version \`${LATEST}\`.\n\nNew SRI Hash: \`${{ steps.update.outputs.new_sha256 }}\`\"
+            }"

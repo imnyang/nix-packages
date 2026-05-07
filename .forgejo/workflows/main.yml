@@ -4,34 +4,69 @@ on:
   push:
     branches:
       - main
-  # pull_request:
+  pull_request:
 
 jobs:
+  check:
+    runs-on: x86_64
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check flake
+        run: |
+          source /etc/bashrc
+          nix flake check
+
   list-packages:
     runs-on: x86_64
     outputs:
       packages: ${{ steps.set-matrix.outputs.packages }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - id: set-matrix
         run: |
           source /etc/bashrc
-          PACKAGES=$(nix flake show --json | nix run nixpkgs#jq -- -c '.packages."x86_64-linux" | keys')
-          echo "packages=$PACKAGES" >> $GITHUB_OUTPUT
-
-  # check:
-  #   runs-on: x86_64
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v4
-  #     - name: Check flake
-  #       run: |
-  #         source /etc/bashrc
-  #         nix flake check
+          ALL_PACKAGES=$(nix flake show --json | nix run nixpkgs#jq -- -r '.packages."x86_64-linux" | keys[]')
           
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            echo "Detecting changed packages for PR..."
+            BASE_REF="${{ github.base_ref }}"
+            # Ensure the base branch is available for diffing
+            git fetch origin "$BASE_REF" --depth=1
+            CHANGED_FILES=$(git diff --name-only "origin/$BASE_REF"...HEAD)
+            
+            if echo "$CHANGED_FILES" | grep -qE 'flake.nix|flake.lock'; then
+              echo "Flake files changed, building all packages."
+              SELECTED_PACKAGES=$(echo "$ALL_PACKAGES" | nix run nixpkgs#jq -- -R . | nix run nixpkgs#jq -- -s -c .)
+            else
+              # Extract package names from pkgs/<name>/
+              CHANGED_PKGS=$(echo "$CHANGED_FILES" | grep '^pkgs/' | cut -d'/' -f2 | sort -u || true)
+              
+              FINAL_PKGS=()
+              for pkg in $CHANGED_PKGS; do
+                if echo "$ALL_PACKAGES" | grep -q "^$pkg$"; then
+                  FINAL_PKGS+=("$pkg")
+                fi
+              done
+              
+              if [ ${#FINAL_PKGS[@]} -eq 0 ]; then
+                SELECTED_PACKAGES="[]"
+              else
+                SELECTED_PACKAGES=$(printf '%s\n' "${FINAL_PKGS[@]}" | nix run nixpkgs#jq -- -R . | nix run nixpkgs#jq -- -s -c .)
+              fi
+            fi
+          else
+            echo "Push event, listing all packages."
+            SELECTED_PACKAGES=$(echo "$ALL_PACKAGES" | nix run nixpkgs#jq -- -R . | nix run nixpkgs#jq -- -s -c .)
+          fi
+          
+          echo "packages=$SELECTED_PACKAGES" >> $GITHUB_OUTPUT
+
   build:
-    needs: list-packages
+    needs: [check, list-packages]
     runs-on: x86_64
+    if: ${{ fromJson(needs.list-packages.outputs.packages)[0] != null }}
     strategy:
       fail-fast: false
       matrix:
@@ -47,7 +82,7 @@ jobs:
           nix build .#${{ matrix.package }}
 
       - name: Cache & Push to Attic
-        if: success()
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         env:
           ATTIC_SERVER: ${{ secrets.ATTIC_SERVER }}
           ATTIC_TOKEN: ${{ secrets.ATTIC_TOKEN }}
