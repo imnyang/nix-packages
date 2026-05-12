@@ -3,7 +3,7 @@
 let
   src = fetchTarball {
     url = "https://code.visualstudio.com/sha/download?build=insider&os=linux-x64";
-    sha256 = "1v1r8vq41dmxaifqhfhgji12qwgm44xanwbihrv3319384s8bf5f"; 
+    sha256 = "09dk54da3kwjnvnr2hvwblcba0big2pb1a3bsvgdfhl0sl24p4i1"; 
   };
 in
 (pkgs.vscode.override {
