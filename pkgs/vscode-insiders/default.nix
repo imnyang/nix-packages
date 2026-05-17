@@ -10,7 +10,7 @@ in
   isInsiders = true;
 }).overrideAttrs (oldAttrs: {
   pname = "vscode-insiders";
-  version = "1.120.0-insider";
+  version = "1.121.0-insider";
   isInsiders = true;
   inherit src;
 
