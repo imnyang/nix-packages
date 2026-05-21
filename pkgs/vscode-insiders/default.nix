@@ -3,14 +3,14 @@
 let
   src = fetchTarball {
     url = "https://code.visualstudio.com/sha/download?build=insider&os=linux-x64";
-    sha256 = "09dk54da3kwjnvnr2hvwblcba0big2pb1a3bsvgdfhl0sl24p4i1"; 
+    sha256 = "0y0fcb1fadms3zp191gh74kn7vhp0mm02582km1anvsryc4ks5dq"; 
   };
 in
 (pkgs.vscode.override {
   isInsiders = true;
 }).overrideAttrs (oldAttrs: {
   pname = "vscode-insiders";
-  version = "1.121.0-insider";
+  version = "1.122.0-insider";
   isInsiders = true;
   inherit src;
 
