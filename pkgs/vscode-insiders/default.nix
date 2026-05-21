@@ -14,9 +14,16 @@ in
   isInsiders = true;
   inherit src;
 
-  buildInputs = oldAttrs.buildInputs ++ [ pkgs.krb5 pkgs.libsoup_3 pkgs.webkitgtk_4_1 ];
+  buildInputs = (oldAttrs.buildInputs or []) ++ [ pkgs.krb5 pkgs.libsoup_3 pkgs.webkitgtk_4_1 ];
 
-  meta = oldAttrs.meta // {
+
+  prePatch = ''
+    ${oldAttrs.prePatch or ""}
+    mkdir -p resources/app/node_modules/@vscode/ripgrep/bin
+    touch resources/app/node_modules/@vscode/ripgrep/bin/rg
+  '';
+
+  meta = (oldAttrs.meta or {}) // {
     mainProgram = "code-insiders";
   };
 })
