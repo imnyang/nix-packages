@@ -15,7 +15,6 @@
       xcursor-mizuki = final.callPackage ./pkgs/xcursor-mizuki/default.nix { };
       pjsk-cursor = final.callPackage ./pkgs/pjsk-cursor/default.nix { };
       helium = final.callPackage ./pkgs/helium/default.nix { };
-      helium-sync = final.callPackage ./pkgs/helium-sync/default.nix { };
       vscode-insiders = final.callPackage ./pkgs/vscode-insiders/default.nix { };
     };
 
@@ -27,19 +26,13 @@
   in {
     overlays.default = overlay;
 
-    nixosModules.helium-sync = import ./modules/helium-sync.nix;
-    homeManagerModules.helium-sync = import ./modules/helium-sync-hm.nix;
-
     packages.${system} = {
       inherit (pkgs) 
         waterfox-bin 
         xcursor-mizuki 
         pjsk-cursor 
         helium 
-        helium-sync 
         vscode-insiders;
-      
-      default = pkgs.helium; # 예시로 하나를 기본값으로 지정
     };
 
     nixConfig = {
