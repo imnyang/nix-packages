@@ -7,13 +7,12 @@
 
   outputs = { self, nixpkgs }:
   let
-    system = [
+    supportedSystems = [
       "x86_64-linux"
       "aarch64-darwin"
       "x86_64-darwin"
     ];
-    
-    # Overlay 정의
+
     overlay = final: prev: {
       waterfox-bin = final.callPackage ./pkgs/waterfox-bin/default.nix { };
       xcursor-mizuki = final.callPackage ./pkgs/xcursor-mizuki/default.nix { };
@@ -22,22 +21,31 @@
       vscode-insiders = final.callPackage ./pkgs/vscode-insiders/default.nix { };
     };
 
-    pkgs = import nixpkgs {
-      inherit system;
-      overlays = [ overlay ];
-      config.allowUnfree = true;
-    };
+    forAllSystems = f: nixpkgs.lib.genAttrs supportedSystems (system: f (
+      import nixpkgs {
+        inherit system;
+        overlays = [ overlay ];
+        config.allowUnfree = true;
+      }
+    ));
   in {
     overlays.default = overlay;
 
-    packages.${system} = {
-      inherit (pkgs) 
-        waterfox-bin 
-        xcursor-mizuki 
-        pjsk-cursor 
-        helium 
-        vscode-insiders;
-    };
+    packages = forAllSystems (pkgs: 
+      let
+        allPkgs = {
+          inherit (pkgs) 
+            waterfox-bin 
+            xcursor-mizuki 
+            pjsk-cursor 
+            helium 
+            vscode-insiders;
+        };
+      in
+        nixpkgs.lib.filterAttrs (name: pkg: 
+          nixpkgs.lib.elem pkgs.stdenv.hostPlatform.system (pkg.meta.platforms or [ "x86_64-linux" ])
+        ) allPkgs
+    );
 
     nixConfig = {
       extra-substituters = [
