@@ -7,7 +7,11 @@
 
   outputs = { self, nixpkgs }:
   let
-    system = "x86_64-linux";
+    system = [
+      "x86_64-linux"
+      "aarch64-darwin"
+      "x86_64-darwin"
+    ];
     
     # Overlay 정의
     overlay = final: prev: {
