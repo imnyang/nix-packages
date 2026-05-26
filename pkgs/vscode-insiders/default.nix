@@ -1,4 +1,4 @@
-{ pkgs }:
+{ pkgs, lib, fetchTarball }:
 
 let
   inherit (pkgs) stdenv;
