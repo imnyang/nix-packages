@@ -18,7 +18,6 @@
       xcursor-mizuki = final.callPackage ./pkgs/xcursor-mizuki/default.nix { };
       pjsk-cursor = final.callPackage ./pkgs/pjsk-cursor/default.nix { };
       helium = final.callPackage ./pkgs/helium/default.nix { };
-      vscode-insiders = final.callPackage ./pkgs/vscode-insiders/default.nix { };
     };
 
     forAllSystems = f: nixpkgs.lib.genAttrs supportedSystems (system: f (
@@ -38,8 +37,7 @@
             waterfox-bin 
             xcursor-mizuki 
             pjsk-cursor 
-            helium 
-            vscode-insiders;
+            helium;
         };
       in
         nixpkgs.lib.filterAttrs (name: pkg: 

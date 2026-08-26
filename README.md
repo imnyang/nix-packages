@@ -4,7 +4,6 @@ imnyang's custom nixpkgs overlay.
 ## Included Packages
 - `helium`: Helium AppImage wrapper
 - `helium-sync`: Helium Sync utility
-- `vscode-insiders`: VSCode Insiders
 - `waterfox-bin`: Waterfox Browser
 - `xcursor-mizuki`: Custom cursor
 - `pjsk-cursor`: Custom cursor
