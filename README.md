@@ -3,6 +3,7 @@ imnyang's custom nixpkgs overlay.
 
 ## Included Packages
 - `helium`: Helium AppImage wrapper
+- `figma-linux`: Figma Desktop for Linux
 - `helium-sync`: Helium Sync utility
 - `waterfox-bin`: Waterfox Browser
 - `xcursor-mizuki`: Custom cursor

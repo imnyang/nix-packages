@@ -18,6 +18,7 @@
       xcursor-mizuki = final.callPackage ./pkgs/xcursor-mizuki/default.nix { };
       pjsk-cursor = final.callPackage ./pkgs/pjsk-cursor/default.nix { };
       helium = final.callPackage ./pkgs/helium/default.nix { };
+      figma-linux = final.callPackage ./pkgs/figma-linux/default.nix { };
     };
 
     forAllSystems = f: nixpkgs.lib.genAttrs supportedSystems (system: f (
@@ -37,7 +38,8 @@
             waterfox-bin 
             xcursor-mizuki 
             pjsk-cursor 
-            helium;
+            helium
+            figma-linux;
         };
       in
         nixpkgs.lib.filterAttrs (name: pkg: 
