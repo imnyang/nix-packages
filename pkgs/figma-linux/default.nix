@@ -13,10 +13,22 @@ let
     hash = "sha256-SLn4y+NVCcBDZrGqIpmpIEQavY7xngt5JMI8yG1g6/0=";
   };
 
-  appimageContents = appimageTools.extract { inherit pname version src; };
+  appimageContents = appimageTools.extract {
+    inherit pname version src;
+
+    # The upstream AppImage registers an AppImage-specific desktop entry at
+    # runtime. That bypasses this package's FHS wrapper when a figma:// URL is
+    # opened, so Electron cannot find libraries such as libnspr4.so.
+    postExtract = ''
+      substituteInPlace $out/AppRun \
+        --replace-fail 'integrate_desktop 2>/dev/null || true' \
+          'true # Desktop integration is provided by the Nix package'
+    '';
+  };
 in
-appimageTools.wrapType2 {
-  inherit pname version src;
+appimageTools.wrapAppImage {
+  inherit pname version;
+  src = appimageContents;
 
   extraInstallCommands = ''
     install -Dm444 ${appimageContents}/usr/share/applications/io.github.nickvdp.figma-desktop-linux.desktop \
