@@ -6,11 +6,11 @@
 
 let
   pname = "figma-linux";
-  version = "126.5.6";
+  version = "126.10.10";
 
   src = fetchurl {
     url = "https://github.com/IliyaBrook/figma-linux/releases/download/${version}/figma-desktop-${version}-amd64.AppImage";
-    hash = "sha256-SLn4y+NVCcBDZrGqIpmpIEQavY7xngt5JMI8yG1g6/0=";
+    hash = "sha256-Qc1VIbRsVse91Hb0OtheY7KheoPObkvJkwxF4ZppGxk=";
   };
 
   appimageContents = appimageTools.extract {
@@ -34,7 +34,17 @@ appimageTools.wrapAppImage {
     install -Dm444 ${appimageContents}/usr/share/applications/io.github.nickvdp.figma-desktop-linux.desktop \
       -t $out/share/applications
     substituteInPlace $out/share/applications/io.github.nickvdp.figma-desktop-linux.desktop \
-      --replace-fail 'Exec=AppRun' 'Exec=${pname}'
+      --replace-fail 'Exec=AppRun' 'Exec=${pname} %U'
+
+    # The AppImage's runtime desktop integration is disabled above so that
+    # figma:// links use this package's FHS wrapper. Register the URI scheme
+    # explicitly and pass the callback URL through to Electron.
+    if ! grep -q '^MimeType=.*x-scheme-handler/figma' \
+      $out/share/applications/io.github.nickvdp.figma-desktop-linux.desktop; then
+      substituteInPlace $out/share/applications/io.github.nickvdp.figma-desktop-linux.desktop \
+        --replace-fail '[Desktop Entry]' \
+          '[Desktop Entry]\nMimeType=x-scheme-handler/figma;'
+    fi
 
     install -Dm444 ${appimageContents}/io.github.nickvdp.figma-desktop-linux.png \
       $out/share/icons/hicolor/256x256/apps/io.github.nickvdp.figma-desktop-linux.png
