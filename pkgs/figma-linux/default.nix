@@ -34,7 +34,7 @@ appimageTools.wrapAppImage {
     install -Dm444 ${appimageContents}/usr/share/applications/io.github.nickvdp.figma-desktop-linux.desktop \
       -t $out/share/applications
     substituteInPlace $out/share/applications/io.github.nickvdp.figma-desktop-linux.desktop \
-      --replace-fail 'Exec=AppRun' 'Exec=${pname} %U'
+      --replace-fail 'Exec=AppRun %u' 'Exec=${pname} %u'
 
     # The AppImage's runtime desktop integration is disabled above so that
     # figma:// links use this package's FHS wrapper. Register the URI scheme
